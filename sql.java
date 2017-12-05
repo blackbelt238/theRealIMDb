@@ -21,60 +21,59 @@ public class sql {
             ResultSet q4;
             ResultSet q5;
             String genreString = "Romance";
-            String q2tconst = "";
             StringBuilder saveStr1 = new StringBuilder();
             StringBuilder saveStr2 = new StringBuilder();
             StringBuilder saveStr3 = new StringBuilder();
             StringBuilder saveStr4 = new StringBuilder();
             StringBuilder saveStr5 = new StringBuilder();
 
-            q1 = stmt.executeQuery("SELECT gross, budget FROM TITLE");
+            q1 = stmt.executeQuery("SELECT T.isAdult, AR.averageRating FROM TITLE T, AVERAGE_RATING AR, IS_RATED IR WHERE T.tconst = IR.tconst AND IR.rconst = AR.rconst");
             while ( q1.next() ) {
-                String gross = q1.getString("gross");
-                saveStr1.append(gross);
+                String adult = q1.getString("T.isAdult");
+                saveStr1.append(adult);
                 saveStr1.append(",");
-                String budget = q1.getString("budget");
-                saveStr1.append(budget);
+                String averating = q1.getString("AR.averageRating");
+                saveStr1.append(averating);
                 saveStr1.append("\n");
             }
-            q2 = stmt.executeQuery("SELECT T.tconst, T.gross, T.budget, G.genre FROM TITLE T, GENRE G WHERE T.tconst = G.tconst");
+            q2 = stmt.executeQuery("SELECT T.tconst, T.isAdult, AR.averageRating, G.genre FROM TITLE T, AVERAGE_RATING AR, IS_RATED IR, GENRE G WHERE T.tconst = IR.tconst AND IR.rconst = AR.rconst AND T.tconst = G.tconst");
             while ( q2.next() ) {
-                q2tconst = q2.getString("T.tconst");
-                String gross = q2.getString("T.gross");
-                saveStr2.append(gross);
+                String q2tconst = q2.getString("T.tconst");
+                saveStr2.append(q2tconst);
                 saveStr2.append(",");
-                String budget = q2.getString("T.budget");
-                saveStr2.append(budget);
+                String adult = q2.getString("T.isAdult");
+                saveStr2.append(adult);
+                saveStr2.append(",");
+                String averating = q2.getString("AR.averageRating");
+                saveStr2.append(averating);
                 saveStr2.append(",");
                 String genre = q2.getString("G.genre");
                 saveStr2.append(genre);
+                saveStr2.append(",");
+                q2part2 = stmt.executeQuery("SELECT COUNT(PC.nconst) FROM ACTS_IN AI, PRINCIPAL_CAST PC, PRIMARY_PROFESSION PP WHERE (PP.profession LIKE “_ctress” OR PP.profession LIKE “ACTRESS”) AND AI.tconst = " + q2tconst + " AND PC.pconst = AI.pconst AND PP.nconst = PC.nconst");
+                while ( q2part2.next() ) {
+                    String numwomen = q2part2.getString("COUNT(PC.nconst)");
+                    saveStr2.append(numwomen);
+                }
                 saveStr2.append("\n");
             }
-            q2part2 = stmt.executeQuery("SELECT COUNT(PC.nconst) FROM ACTS_IN AI, PRINCIPAL_CAST PC, PRIMARY_PROFESSION PP WHERE (PP.profession LIKE “_ctress” OR PP.profession LIKE “ACTRESS”) AND AI.tconst = " + q2tconst + " AND PC.pconst = AI.pconst AND PP.nconst = PC.nconst");
-            while ( q2part2.next() ) {
-                String numwomen = q2part2.getString("COUNT(PC.nconst)");
-                saveStr2.append(numwomen);
-                saveStr2.append("\n");
-            }
-            q3 = stmt.executeQuery("SELECT T.tconst, T.gross, T.budget, G.genre FROM TITLE T, GENRE G WHERE T.title LIKE “Warcraft” AND T.startYear = 2016 AND T.tconst = G.tconst");
+
+            q3 = stmt.executeQuery("SELECT T.tconst, AR.averageRating, G.genre FROM TITLE T, AVERAGE_RATING AR, IS_RATED IR, GENRE G WHERE T.title LIKE “Warcraft” AND T.startYear = 2016 AND T.tconst = G.tconst AND T.tconst = IR.tconst AND IR.rconst = AR.rconst");
             while ( q3.next() ) {
                 String tconst = q3.getString("T.tconst");
                 saveStr3.append(tconst);
                 saveStr3.append(",");
-                String gross = q3.getString("T.gross");
-                saveStr3.append(gross);
-                saveStr3.append(",");
-                String budget = q3.getString("T.budget");
-                saveStr3.append(budget);
+                String rating = q3.getString("AR.averageRating");
+                saveStr3.append(rating);
                 saveStr3.append(",");
                 String genre = q3.getString("G.genre");
                 saveStr3.append(genre);
                 saveStr3.append("\n");
             }
-            q4 = stmt.executeQuery("SELECT T.gross, T.language, G.genre FROM TITLE T, GENRE G WHERE T.tconst = G.tconst AND G.genre = " + genreString);
+            q4 = stmt.executeQuery("SELECT AR.averageRating, T.language, G.genre FROM TITLE T, AVERAGE_RATING AR, IS_RATED IR, GENRE G WHERE T.tconst = IR.tconst AND IR.rconst = AR.rconst AND T.tconst = G.tconst AND G.genre = " + genreString);
             while ( q4.next() ) {
-                String gross = q4.getString("T.gross");
-                saveStr4.append(gross);
+                String rating = q4.getString("AR.averageRating");
+                saveStr4.append(rating);
                 saveStr4.append(",");
                 String language = q4.getString("T.language");
                 saveStr4.append(language);
@@ -83,24 +82,21 @@ public class sql {
                 saveStr4.append(genre);
                 saveStr4.append("\n");
             }
-            q5 = stmt.executeQuery("SELECT AR.averageRating, T.gross, (T.primaryTitle LIKE '%_tar _ars%')+1 FROM TITLE T, AVERAGE_RATING AR, IS_RATED IR WHERE T.primaryTitle LIKE '%_tar _ars%' OR T.primaryTitle LIKE '%_tar _rek%'AND T.tconst = IR.tconst AND IR.rconst = AR.rconst");
+            q5 = stmt.executeQuery("SELECT AR.averageRating, (T.primaryTitle LIKE '%_tar _ars%')+1 FROM TITLE T, AVERAGE_RATING AR, IS_RATED IR WHERE T.primaryTitle LIKE '%_tar _ars%' OR T.primaryTitle LIKE '%_tar _rek%'AND T.tconst = IR.tconst AND IR.rconst = AR.rconst");
             while ( q5.next() ) {
                 String aveRating = q5.getString("AR.averageRating");
                 saveStr5.append(aveRating);
-                saveStr5.append(",");
-                String gross = q5.getString("T.gross");
-                saveStr5.append(gross);
                 saveStr5.append(",");
                 String count = q5.getString("COUNT(T.primaryTitle)");
                 saveStr5.append(count);
                 saveStr5.append("\n");
             }
             conn.close();
-            FileWrite filewrite1 = null;
-            FileWrite filewrite2 = null;
-            FileWrite filewrite3 = null;
-            FileWrite filewrite4 = null;
-            FileWrite filewrite5 = null;
+            FileWriter filewrite1 = null;
+            FileWriter filewrite2 = null;
+            FileWriter filewrite3 = null;
+            FileWriter filewrite4 = null;
+            FileWriter filewrite5 = null;
             try{
               filewrite1 = new FileWriter("q1.csv");
               filewrite1.append(saveStr1.toString());
@@ -108,7 +104,7 @@ public class sql {
               filewrite2.append(saveStr2.toString());
               filewrite3 = new FileWriter("q3.csv");
               filewrite3.append(saveStr3.toString());
-              filewrite4 = new FileWrit3r("q4.csv");
+              filewrite4 = new FileWriter("q4.csv");
               filewrite4.append(saveStr4.toString());
               filewrite5 = new FileWriter("q5.csv");
               filewrite5.append(saveStr5.toString());
