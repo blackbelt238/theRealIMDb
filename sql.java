@@ -18,22 +18,25 @@ public class sql {
             //create result sets for each query
             ResultSet q1;
             ResultSet q2;
-            ResultSet q2part2;
-            ResultSet q3;
+            ResultSet q3part1;
+            ResultSet q3part2;
+            ResultSet q3part3;
             ResultSet q4;
             ResultSet q5;
             //string used to pull info from a specific genere
-            String genreString = "Romance";
+            String genreString = "%dventure%";
             //string builders for writing to csv files
             StringBuilder saveStr1 = new StringBuilder();
             StringBuilder saveStr2 = new StringBuilder();
             StringBuilder saveStr3 = new StringBuilder();
+            StringBuilder saveStr3pt2 = new StringBuilder();
+            StringBuilder saveStr3pt3 = new StringBuilder();
             StringBuilder saveStr4 = new StringBuilder();
             StringBuilder saveStr5 = new StringBuilder();
 
             //query one
             //to compare average ratings against the adult rating of titles
-            q1 = stmt.executeQuery("SELECT T.isAdult, AR.averageRating FROM TITLE T, AVERAGE_RATING AR, IS_RATED IR WHERE T.tconst = IR.tconst AND IR.rconst = AR.rconst");
+            q1 = stmt.executeQuery("SELECT T.isAdult, R.averageRating FROM TITLE T, RATING R, IS_RATED IR WHERE T.tconst = IR.tconst AND IR.rconst = R.rconst");
             while ( q1.next() ) {
                 //add boolean isAdult
                 String adult = q1.getString("T.isAdult");
@@ -45,66 +48,82 @@ public class sql {
                 saveStr1.append("\n");
             }
             //query two
-            //to compare average rating and adult rating against the number of women in titles
-            q2 = stmt.executeQuery("SELECT T.tconst, T.isAdult, AR.averageRating, G.genre, T.startYear FROM TITLE T, AVERAGE_RATING AR, IS_RATED IR, GENRE G WHERE T.tconst = IR.tconst AND IR.rconst = AR.rconst AND T.tconst = G.tconst");
+            //to compare start year, runtime, primary genre, and average rating
+            q2 = stmt.executeQuery("SELECT G.genre, T.startYear, T.runtimeMinutes, R.averageRating FROM TITLE T, RATING R, IS_RATED IR, PRIMARY_GENRE G WHERE T.tconst = IR.tconst AND IR.rconst = R.rconst AND T.tconst = G.tconst AND G.tconst = T.tconst AND T.runtimeMinutes IS NOT NULL");
             while ( q2.next() ) {
-                //add title's unique identifier and save to use in inner query
-                String q2tconst = q2.getString("T.tconst");
-                saveStr2.append(q2tconst);
-                saveStr2.append(",");
-                //add boolean isAdult
-                String adult = q2.getString("T.isAdult");
-                saveStr2.append(adult);
-                saveStr2.append(",");
-                //add average rating
-                String averating = q2.getString("AR.averageRating");
-                saveStr2.append(averating);
-                saveStr2.append(",");
                 //add genre
                 String genre = q2.getString("G.genre");
                 saveStr2.append(genre);
                 saveStr2.append(",");
-                //add title's start year
+                //add start year
                 String year = q2.getString("T.startYear");
                 saveStr2.append(year);
                 saveStr2.append(",");
-                //secondary query to find number of women in the title
-                q2part2 = stmt.executeQuery("SELECT COUNT(AI.nconst) FROM ACTS_IN AI, PRIMARY_PROFESSION PP WHERE (PP.profession LIKE “_ctress” OR PP.profession LIKE “ACTRESS”) AND AI.tconst = " + q2tconst + " AND PP.nconst = AI.nconst");
-                while ( q2part2.next() ) {
-                    //add number of actresses for each title
-                    String numwomen = q2part2.getString("COUNT(PC.nconst)");
-                    saveStr2.append(numwomen);
-                }
+                //add runtime in minutes
+                String runtime = q2.getString("T.runtimeMinutes");
+                saveStr2.append(runtime);
+                saveStr2.append(",");
+                //add average rating
+                String averating = q2.getString("AR.averageRating");
+                saveStr2.append(averating);
                 saveStr2.append("\n");
             }
             //query three
             //to compare average rating and for Warcraft to make predictions given the average ratings for titles in the same genre as Warcraft
-            q3 = stmt.executeQuery("SELECT T.tconst, AR.averageRating, G.genre FROM TITLE T, AVERAGE_RATING AR, IS_RATED IR, GENRE G WHERE T.title LIKE “Warcraft” AND T.startYear = 2016 AND T.tconst = G.tconst AND T.tconst = IR.tconst AND IR.rconst = AR.rconst");
-            while ( q3.next() ) {
-                //add title's unique identifier
-                String tconst = q3.getString("T.tconst");
-                saveStr3.append(tconst);
-                saveStr3.append(",");
+            q3part1 = stmt.executeQuery("SELECT R.averageRating, T.startYear, T.runtimeMinutes FROM TITLE T, RATING R, IS_RATED IR, GENRE G WHERE T.tconst = IR.tconst AND IR.rconst = R.rconst AND T.tconst = G.tconst AND G.genre LIKE" + genreString + "AND T.runtimeMinutes IS NOT NULL");
+            while ( q3part1.next() ) {
                 //add average rating
-                String rating = q3.getString("AR.averageRating");
+                String rating = q3part1.getString("R.Rating");
                 saveStr3.append(rating);
                 saveStr3.append(",");
-                //add genre
-                String genre = q3.getString("G.genre");
-                saveStr3.append(genre);
+                //add start year
+                String year = q3part1.getString("T.startYear");
+                saveStr3.append(year);
+                saveStr3.append(",");
+                //add runtime
+                String time = q3part1.getString("T.runtimeMinutes");
+                saveStr3.append(time);
                 saveStr3.append("\n");
             }
-            //query four
-            //to compare average rating and language for a specific genre
-            q4 = stmt.executeQuery("SELECT AR.averageRating, T.language, G.genre FROM TITLE T, AVERAGE_RATING AR, IS_RATED IR, GENRE G WHERE T.tconst = IR.tconst AND IR.rconst = AR.rconst AND T.tconst = G.tconst AND G.genre = " + genreString);
-            while ( q4.next() ) {
+            genreString = "%ction%";
+            q3part2 = stmt.executeQuery("SELECT R.averageRating, T.startYear, T.runtimeMinutes FROM TITLE T, RATING R, IS_RATED IR, GENRE G WHERE T.tconst = IR.tconst AND IR.rconst = R.rconst AND T.tconst = G.tconst AND G.genre LIKE" + genreString + "AND T.runtimeMinutes IS NOT NULL");
+            while ( q3part2.next() ) {
                 //add average rating
-                String rating = q4.getString("AR.averageRating");
-                saveStr4.append(rating);
-                saveStr4.append(",");
-                //add title's original language
-                String language = q4.getString("T.language");
-                saveStr4.append(language);
+                String rating = q3part2.getString("R.averageRating");
+                saveStr3pt2.append(rating);
+                saveStr3pt2.append(",");
+                //add start year
+                String year = q3part2.getString("T.startYear");
+                saveStr3pt2.append(year);
+                saveStr3pt2.append(",");
+                //add runtime
+                String time = q3part2.getString("T.runtimeMinutes");
+                saveStr3pt2.append(time);
+                saveStr3pt2.append("\n");
+            }
+            genreString = "%antasy%";
+            q3part3 = stmt.executeQuery("SELECT R.averageRating, T.startYear, T.runtimeMinutes FROM TITLE T, RATING R, IS_RATED IR, GENRE G WHERE T.tconst = IR.tconst AND IR.rconst = R.rconst AND T.tconst = G.tconst AND G.genre LIKE" + genreString + "AND T.runtimeMinutes IS NOT NULL");
+            while ( q3part3.next() ) {
+                //add average rating
+                String rating = q3part3.getString("R.averageRating");
+                saveStr3pt3.append(rating);
+                saveStr3pt3.append(",");
+                //add start year
+                String year = q3part3.getString("T.startYear");
+                saveStr3pt3.append(year);
+                saveStr3pt3.append(",");
+                //add runtime
+                String time = q3part3.getString("T.runtimeMinutes");
+                saveStr3pt3.append(time);
+                saveStr3pt3.append("\n");
+            }
+            //query four
+            //to compare runtime across different genres
+            q4 = stmt.executeQuery("SELECT T.runtime, G.genre FROM TITLE T, Primary_Genre G WHERE T.tconst = G.tconst");
+            while ( q4.next() ) {
+                //add runtime in minutes
+                String runtime = q4.getString("T.runtime");
+                saveStr4.append(runtime);
                 saveStr4.append(",");
                 //add genre
                 String genre = q4.getString("G.genre");
@@ -113,10 +132,10 @@ public class sql {
             }
             //query five
             //to compare average rating and number of titles for the star wars and star trek franchises
-            q5 = stmt.executeQuery("SELECT AR.averageRating, (T.primaryTitle LIKE '%_tar _ars%')+1 FROM TITLE T, AVERAGE_RATING AR, IS_RATED IR WHERE T.primaryTitle LIKE '%_tar _ars%' OR T.primaryTitle LIKE '%_tar _rek%' AND T.tconst = IR.tconst AND IR.rconst = AR.rconst");
+            q5 = stmt.executeQuery("SELECT R.averageRating, (T.primaryTitle LIKE '%_tar _ars%')+1 FROM TITLE T, RATING R, IS_RATED IR WHERE T.primaryTitle LIKE '%_tar _ars%' OR T.primaryTitle LIKE '%_tar _rek%' AND T.tconst = IR.tconst AND IR.rconst = R.rconst");
             while ( q5.next() ) {
                 //add average rating
-                String aveRating = q5.getString("AR.averageRating");
+                String aveRating = q5.getString("R.averageRating");
                 saveStr5.append(aveRating);
                 saveStr5.append(",");
                 //add primary title
