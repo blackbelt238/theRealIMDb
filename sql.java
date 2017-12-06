@@ -6,7 +6,7 @@ import java.lang.StringBuilder;
  * Emily Felde, Ethan Peterson, Taylor Koth
  * Deliverable 5
  */
-public class sql {
+public class Sql {
 
     public static void main (String[] args) {
         try {
@@ -43,7 +43,7 @@ public class sql {
             }
             //query two
             //to compare start year, runtime, primary genre, and average rating
-            q2 = stmt.executeQuery("SELECT G.genre, T.startYear, T.runtimeMinutes, R.averageRating FROM TITLE T, RATING R, IS_RATED IR, PRIMARY_GENRE G WHERE T.tconst = IR.tconst AND IR.rconst = R.rconst AND T.tconst = G.tconst AND T.runtimeMinutes IS NOT NULL");
+            q2 = stmt.executeQuery("SELECT G.genre, T.startYear, T.runtimeMinutes, R.averageRating FROM TITLE T, RATING R, IS_RATED IR, PRIMARY_GENRE G WHERE T.tconst = IR.tconst AND IR.rconst = R.rconst AND T.tconst = G.tconst AND T.runtimeMinutes IS NOT NULL AND T.startYear IS NOT NULL");
             while ( q2.next() ) {
                 //add genre
                 String genre = q2.getString("G.genre");
@@ -119,21 +119,21 @@ public class sql {
             FileWriter filewrite5 = null;
             //try writing to .csv files
             try{
-              filewrite1 = new FileWriter("q1.csv");
+              filewrite1 = new FileWriter("question1.csv");
               filewrite1.append(saveStr1.toString());
-              System.out.println("Generated q1.csv");
-              filewrite2 = new FileWriter("q2.csv");
+              System.out.println("Generated question1.csv");
+              filewrite2 = new FileWriter("question2.csv");
               filewrite2.append(saveStr2.toString());
-              System.out.println("Generated q2.csv");
-              filewrite3 = new FileWriter("q3.csv");
+              System.out.println("Generated question2.csv");
+              filewrite3 = new FileWriter("question3.csv");
               filewrite3.append(saveStr3.toString());
-              System.out.println("Generated q3.csv");
-              filewrite4 = new FileWriter("q4.csv");
+              System.out.println("Generated question3.csv");
+              filewrite4 = new FileWriter("question4.csv");
               filewrite4.append(saveStr4.toString());
-              System.out.println("Generated q4.csv");
-              filewrite5 = new FileWriter("q5.csv");
+              System.out.println("Generated question4.csv");
+              filewrite5 = new FileWriter("question5.csv");
               filewrite5.append(saveStr5.toString());
-              System.out.println("Generated q5.csv");
+              System.out.println("Generated question5.csv");
             }
             catch(Exception e){
               System.out.println(e);
